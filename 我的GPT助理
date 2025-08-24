@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>我的 GPT 助手</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", sans-serif; background:#fafafa; margin:0; }
+  .wrap { max-width:680px; margin:32px auto; padding:16px; }
+  .card { background:#fff; border-radius:16px; padding:20px; box-shadow:0 6px 24px rgba(0,0,0,.06) }
+  #chat { height:420px; overflow:auto; border:1px solid #eee; border-radius:12px; padding:12px; background:#fff }
+  .me{margin:8px 0; text-align:right; white-space:pre-wrap}
+  .ai{margin:8px 0; text-align:left; white-space:pre-wrap}
+  textarea{width:100%; height:90px; padding:10px; border-radius:12px; border:1px solid #ddd; resize:vertical}
+  button{padding:10px 16px; border:0; border-radius:10px; cursor:pointer}
+</style>
+<div class="wrap">
+  <div class="card">
+    <h2>🤖 我的 GPT 助手</h2>
+    <div id="chat" aria-live="polite"></div>
+    <div style="margin-top:12px">
+      <textarea id="input" placeholder="輸入你的問題…（按送出）"></textarea>
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px">
+        <button onclick="clearChat()">清除</button>
+        <button onclick="send()">送出</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function addMsg(cls, text) {
+  const d = document.createElement('div');
+  d.className = cls;
+  d.innerText = text;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
+function clearChat(){ chat.innerHTML=''; }
+
+async function send(){
+  const msg = input.value.trim();
+  if(!msg) return;
+  addMsg('me', '你：' + msg);
+  input.value = '';
+
+  const res = await fetch('/api/chat', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ message: msg })
+  });
+  const data = await res.json();
+  if(data.error){
+    addMsg('ai','GPT：發生錯誤：' + data.error);
+  }else{
+    addMsg('ai', 'GPT：' + (data.reply || '（沒有回應）'));
+  }
+}
+</script>
+</html>
